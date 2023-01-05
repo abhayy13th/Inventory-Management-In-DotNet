@@ -1,0 +1,99 @@
+﻿@inject NavigationManager NavigationManager
+
+
+
+<div class="top-row ps-3 navbar navbar-dark">
+	<div class="container-fluid">
+		<a class="navbar-brand" href="">CourseWork</a>
+		<button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+	</div>
+</div>
+
+<div class="@NavMenuCssClass" @onclick="ToggleNavMenu" style="overflow-y:auto ;height:auto" >
+	<nav class="flex-column" style="overflow-y:auto ;height:auto">
+		<div class="nav-item px-3"><h5 class="text-light">Welcome <strong>@GlobalState.CurrentUser.Username</strong>!</h5></div>
+		<div class="nav-item px-3">
+			<NavLink class="nav-link" href="home" Match="NavLinkMatch.All">
+				<span class="oi oi-home" aria-hidden="true"></span> Home
+			</NavLink>
+		</div>
+		@if (GlobalState.CurrentUser.Role == RoleModel.Admin)
+		{
+			<div class="nav-item px-3">
+				<NavLink class="nav-link" href="register"> 
+					<span class="oi oi-list-rich" aria-hidden="true"></span> Add Staff
+				</NavLink>
+			</div>
+		}
+		<div class="nav-item px-3">
+			<NavLink class="nav-link" href="inventory">
+				<span class="oi oi-list-rich" aria-hidden="true"></span> Inventory
+			</NavLink>
+		</div>
+		@if (GlobalState.CurrentUser.Role == RoleModel.Admin)
+		{
+			<div class="nav-item px-3">
+				<NavLink class="nav-link" href="additem">
+					<span class="oi oi-list-rich" aria-hidden="true"></span> Add Item
+				</NavLink>
+			</div>
+		}
+		@if (GlobalState.CurrentUser.Role == RoleModel.Staff)
+		{
+			<div class="nav-item px-3">
+				<NavLink class="nav-link" href="withdraw">
+					<span class="oi oi-list-rich" aria-hidden="true"></span> Withdraw
+				</NavLink>
+			</div>
+		}
+			<div class="nav-item px-3">
+				<NavLink class="nav-link" href="requestList">
+					<span class="oi oi-list-rich" aria-hidden="true"></span> RequestList
+				</NavLink>
+			</div>
+		
+		@if (GlobalState.CurrentUser.Role == RoleModel.Admin)
+		{
+			<div class="nav-item px-3">
+				<NavLink class="nav-link" href="approverequest">
+					<span class="oi oi-list-rich" aria-hidden="true"></span> Approve Request
+				</NavLink>
+			</div>
+		}
+		<div class="nav-item px-3">
+			<NavLink class="nav-link" href="logs">
+				<span class="oi oi-list-rich" aria-hidden="true"></span> Logs
+			</NavLink>
+		</div>
+		<div class="nav-item px-3 " style="align-self:flex-end">
+			<NavLink class="nav-link text-danger" role="button" @onclick="LogoutHandler">
+				<span class="oi oi-account-logout" /> Logout
+			</NavLink>
+		</div>
+
+	</nav>
+</div>
+
+@code {
+
+	protected override async Task OnInitializedAsync()
+	{
+		
+
+	}	
+
+	[Parameter]
+	public EventCallback LogoutHandler { get; set; }
+
+
+	private bool collapseNavMenu = true;
+
+	private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+	private void ToggleNavMenu()
+	{
+		collapseNavMenu = !collapseNavMenu;
+	}
+}

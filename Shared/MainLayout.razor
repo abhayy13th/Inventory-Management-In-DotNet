@@ -1,0 +1,46 @@
+﻿@inherits LayoutComponentBase
+@using MudBlazor
+
+@inject UserService UsersService
+@inject NavigationManager NavManager
+<MudThemeProvider/>
+<MudDialogProvider/>
+<MudSnackbarProvider/>
+<div class="page" style="overflow:auto">
+	@if (GlobalState.CurrentUser != null)
+	{
+		<div class="sidebar">
+			<NavMenu LogoutHandler="LogoutHandler"/>
+		</div>
+	}
+	<main>
+	
+
+		<article class="content px-4">
+			
+				<MudLayout>
+					<MudContainer MaxWidth="MaxWidth.Medium">
+					
+							@Body
+					
+
+					</MudContainer>
+				</MudLayout>
+			
+		</article>
+	</main>
+</div>
+@code {
+//private GlobalState _globalState = new();
+	protected override void OnInitialized()
+	{
+		UsersService.SeedUser();
+	}
+
+	private void LogoutHandler()
+	{
+		GlobalState.CurrentUser = null;
+		NavManager.NavigateTo("/login");
+	}
+}
+

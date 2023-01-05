@@ -1,0 +1,163 @@
+﻿@page "/approverequest"
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+<h3>ApproveRequest</h3>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Item</th>
+            <th>Quantity</th>
+            <th>Taken By</th>
+            <th>Date</th>
+            <th>Status</th>
+
+        </tr>
+    </thead>
+    <tbody>
+       
+        @foreach (var use in Requests)
+        {
+         
+            @if (use.status == Status.Pending ){
+                
+                <tr>
+                <td>@use.RequestItem</td>
+                <td>@use.Quantity</td>
+                <td>@use.TakenBy</td>
+                <td>@use.DateTakenOut</td>
+                <td>
+
+
+
+                        
+                        @if (ids.Contains(use.RequestId))
+                        {
+
+                        <MudButton Color="Color.Primary"  Disabled="true" Variant="@btype" @onclick="@(() => approve(use.RequestId))">Approve</MudButton>
+                            <MudButton Color="Color.Error" Disabled="true" Variant="@btype" @onclick="@(() => rejected(use.RequestId))">Reject</MudButton>
+                        }
+                        else
+                        {
+                            <MudButton Color="Color.Primary"  Disabled="false" Variant="@btype" @onclick="@(() => approve(use.RequestId))">Approve</MudButton>
+                        <MudButton Color="Color.Error" Disabled="false" Variant="@btype" @onclick="@(() => rejected(use.RequestId))">Reject</MudButton>
+                        }
+                        
+
+                </td>
+
+                
+            </tr>
+        }
+        }
+        
+    </tbody>
+</table>
+        @if (status == Status.Approved)
+        {
+            <MudAlert Style="width:auto"  Severity="Severity.Info" Dense="true" Class="my-2">The request has been successfully approved</MudAlert>
+            
+        }
+        else if(status == Status.Rejected)
+        {
+            <MudAlert Style="width:auto"  Severity="Severity.Warning" Dense="true" Class="my-2">The request has been successfully rejected</MudAlert>
+        }
+
+
+@code {
+   
+    
+    private IEnumerable<RequestModel> Requests = new List<RequestModel>();
+    private bool done;
+    private Variant btype = Variant.Outlined;
+    private Status status;
+    private List<Guid> ids = new List<Guid>()
+    ;
+    private string user = GlobalState.CurrentUser.Username;
+
+    private RequestModel request;
+
+
+
+    public void approve(Guid reqID)
+    {
+
+
+        DateTime currentTime = DateTime.Now;
+        if (currentTime.DayOfWeek >= DayOfWeek.Monday && currentTime.DayOfWeek <= DayOfWeek.Friday)
+
+        {  //Check if the current time is between 9:00 AM and 4:00 PM
+            if (currentTime.TimeOfDay >= new TimeSpan(9, 0, 0) && currentTime.TimeOfDay <= new TimeSpan(16, 0, 0))
+            {
+                request = InventoryService.retrieveRequest(reqID);
+                status = Status.Approved;
+                done = true;
+                InventoryService.updateStatus(request.RequestId, status,user,done);
+                LogService.AddLog($"{request.Quantity} of {request.RequestItem} were approved by {request.ApprovedBy} to be taken by {request.TakenBy} on {request.DateTakenOut}",DateTime.Now);
+                ids.Add(request.RequestId);
+
+            }
+            else
+            {
+                Snackbar.Add("You can only approve requests between 9:00 AM and 4:00 PM");
+                GlobalState.CurrentUser = null;
+                NavigationManager.NavigateTo("/login");
+            }
+
+        }
+        else
+        {
+            Snackbar.Add("You can only approve requests between Monday and Friday");
+            GlobalState.CurrentUser = null;
+            NavigationManager.NavigateTo("/login");
+        }
+       
+
+    }
+
+    private void rejected(Guid reqID)
+    {
+
+        DateTime currentTime = DateTime.Now;
+        if (currentTime.DayOfWeek >= DayOfWeek.Monday && currentTime.DayOfWeek <= DayOfWeek.Friday)
+
+        {  //Check if the current time is between 9:00 AM and 4:00 PM
+            if (currentTime.TimeOfDay >= new TimeSpan(9, 0, 0) && currentTime.TimeOfDay <= new TimeSpan(16, 0, 0))
+            {
+
+        done = true;
+        status = Status.Rejected;
+        request = InventoryService.retrieveRequest(reqID);
+        InventoryService.updateStatus(request.RequestId, status, user, done);
+        ids.Add(request.RequestId);
+        LogService.AddLog($"{request.Quantity} of {request.RequestItem} were rejected by {request.ApprovedBy} to be taken by {request.TakenBy} on {request.DateTakenOut}",DateTime.Now);
+            }
+            else
+            {
+                Snackbar.Add("You can only approve requests between 9:00 AM and 4:00 PM");
+                GlobalState.CurrentUser = null;
+                NavigationManager.NavigateTo("/login");
+            }
+
+        }
+        else
+        {
+            Snackbar.Add("You can only approve requests between Monday and Friday");
+            GlobalState.CurrentUser = null;
+            NavigationManager.NavigateTo("/login");
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+
+
+        Requests = InventoryService.GetAllRequests();
+      
+
+
+    }
+
+}
+
+
+

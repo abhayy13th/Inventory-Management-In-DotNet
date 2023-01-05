@@ -1,0 +1,173 @@
+﻿@page "/inventory"
+@using CourseWork.Data
+@using CourseWork.Data.Model
+@using MudBlazor
+@inject InventoryService InventoryService
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+
+
+
+<MudTable Items="@Elements" Dense="@dense" Hover="@hover" ReadOnly="@ronly" CanCancelEdit="@canCancelEdit" Filter="new Func<InventoryModel,bool>(FilterFunc)"
+          @bind-SelectedItem="selectedItem1" SortLabel="Sort By" CommitEditTooltip="Commit Edit"
+          OnCommitEditClick="@(() => Snackbar.Add("Commit Edit Handler Invoked"))" RowEditPreview="BackupItem" RowEditCancel="ResetItemToOriginalValues"
+          RowEditCommit="ItemHasBeenCommitted" IsEditRowSwitchingBlocked="@blockSwitch" ApplyButtonPosition="@applyButtonPosition" EditButtonPosition="@editButtonPosition" EditTrigger="@editTrigger">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Inventory</MudText>
+        <MudSpacer />
+        <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    </ToolBarContent>
+    <ColGroup>
+       
+      
+    </ColGroup>
+    <HeaderContent>
+        <MudTh><MudTableSortLabel InitialDirection="SortDirection.Ascending"  SortBy="new Func<InventoryModel, object>(x=>x.Item)">Item</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<InventoryModel, object>(x=>x.Quantity)">Quantity</MudTableSortLabel></MudTh>
+@*        <MudTh><MudTableSortLabel SortBy="new Func<InventoryModel, object>(x=>x.ApprovedBy)">Approved By</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<InventoryModel, object>(x=>x.TakenBy)">Taken By</MudTableSortLabel></MudTh>*@
+        <MudTh><MudTableSortLabel SortBy="new Func<InventoryModel, object>(x=>x.DateTakenOut)">Date Taken Out</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<InventoryModel, object>(x=>x.Price)">Price</MudTableSortLabel></MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Item">@context.Item</MudTd>
+        <MudTd DataLabel="Quantity">@context.Quantity</MudTd>
+  @*      <MudTd DataLabel="Approved by">@context.ApprovedBy</MudTd>
+        <MudTd DataLabel="Taken By">@context.TakenBy</MudTd>*@
+        <MudTd DataLabel="Date Taken Out">@context.DateTakenOut</MudTd>
+        <MudTd DataLabel="Price">@context.Price</MudTd>
+    </RowTemplate>
+    <RowEditingTemplate>
+        <MudTd DataLabel="Item">
+            <MudTextField @bind-Value="@context.Item" Required />
+            </MudTd>
+        <MudTd DataLabel="Quantity">
+            <MudNumericField @bind-Value="@context.Quantity" Required />
+        </MudTd>
+        @*<MudTd DataLabel="ApprovedBy">
+            <MudTextField @bind-Value="@context.ApprovedBy"  />
+        </MudTd>
+        <MudTd DataLabel="Taken By">
+            <MudTextField @bind-Value="@context.TakenBy" Required />
+        </MudTd>*@
+        <MudTd DataLabel="Date Taken Out">
+            <MudTextField @bind-Value="@context.DateTakenOut" Required />
+        </MudTd>
+        <MudTd DataLabel="Price">
+            <MudNumericField @bind-Value="@context.Price" Required />
+        </MudTd>
+    </RowEditingTemplate>
+    <PagerContent>
+        <MudTablePager />
+    </PagerContent>
+    <EditButtonContent Context="button">
+        <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" Class="pa-0" OnClick="@button.ButtonAction" Disabled="@button.ButtonDisabled" />
+    </EditButtonContent>
+</MudTable>
+
+
+
+
+
+@code {
+    private List<string> editEvents = new();
+    private bool dense = false;
+    private bool hover = true;
+    private bool ronly = false;
+    private bool canCancelEdit = true;
+    private bool blockSwitch = false;
+    private string searchString = "";
+    private InventoryModel selectedItem1 = null;
+    private InventoryModel elementBeforeEdit;
+    private InventoryModel elementAfterEdit;
+    private HashSet<InventoryModel> selectedItems1 = new HashSet<InventoryModel>();
+    private TableApplyButtonPosition applyButtonPosition = TableApplyButtonPosition.End;
+    private TableEditButtonPosition editButtonPosition = TableEditButtonPosition.End;
+    private TableEditTrigger editTrigger = TableEditTrigger.EditButton;
+    private IEnumerable<InventoryModel> Elements = new List<InventoryModel>();
+    
+    protected override async Task OnInitializedAsync()
+    {
+        Elements = InventoryService.GetAllItems();
+        if (GlobalState.CurrentUser.Role == RoleModel.Staff)
+        {
+            ronly = true;
+        }
+       
+    }
+
+    private void ClearEventLog()
+    {
+        editEvents.Clear();
+    }
+
+    private void AddEditionEvent(string message)
+    {
+        editEvents.Add(message);
+        StateHasChanged();
+    }
+
+    private void BackupItem(object element)
+    {
+        elementBeforeEdit = new()
+            {
+                Item = ((InventoryModel)element).Item,
+                Quantity = ((InventoryModel)element).Quantity,
+                //ApprovedBy = ((InventoryModel)element).ApprovedBy,
+                //TakenBy = ((InventoryModel)element).TakenBy,
+                DateTakenOut = ((InventoryModel)element).DateTakenOut,
+                Price = ((InventoryModel)element).Price
+            };
+       
+        AddEditionEvent($"RowEditPreview event: made a backup of Element {((InventoryModel)element).Item}");
+    }
+
+    private void ItemHasBeenCommitted(object element)
+    {
+        elementAfterEdit = new()
+            {
+                
+                ItemId=((InventoryModel)element).ItemId,
+                Item = ((InventoryModel)element).Item,
+                Quantity = ((InventoryModel)element).Quantity,
+                //ApprovedBy = ((InventoryModel)element).ApprovedBy,
+                //TakenBy = ((InventoryModel)element).TakenBy,
+                DateTakenOut = ((InventoryModel)element).DateTakenOut,
+                Price = ((InventoryModel)element).Price
+            };
+        LogService.AddLog($"{elementAfterEdit.Quantity} of {elementAfterEdit.Item} were edited by {elementAfterEdit.ApprovedBy} on {elementAfterEdit.DateTakenOut}",DateTime.Now);
+                InventoryService.UpdateItem(elementAfterEdit.ItemId, elementAfterEdit.Item, elementAfterEdit.Quantity, elementAfterEdit.ApprovedBy, elementAfterEdit.TakenBy, elementAfterEdit.DateTakenOut, elementAfterEdit.Price);
+        
+    
+    }
+    private void ResetItemToOriginalValues(object element)
+    {
+        ((InventoryModel)element).Item = elementBeforeEdit.Item;
+        ((InventoryModel)element).Quantity = elementBeforeEdit.Quantity;
+        //((InventoryModel)element).ApprovedBy = elementBeforeEdit.ApprovedBy;
+        //((InventoryModel)element).TakenBy = elementBeforeEdit.TakenBy;
+        ((InventoryModel)element).DateTakenOut = elementBeforeEdit.DateTakenOut;
+        ((InventoryModel)element).Price = elementBeforeEdit.Price;
+        AddEditionEvent($"RowEditCancel event: Changes to Element {((InventoryModel)element).Item} canceled");
+
+    }
+
+    private bool FilterFunc(InventoryModel element)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if (element.Item.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.TakenBy.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if ($"{element.Quantity} {element.Price} {element.DateTakenOut} ".Contains(searchString))
+            return true;
+        return false;
+    }
+}
+
+
+
+
+
+

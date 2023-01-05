@@ -1,0 +1,69 @@
+﻿@page "/additem"
+
+@using MudBlazor
+@using CourseWork.Data
+@using System.ComponentModel.DataAnnotations
+
+@inject NavigationManager NavigationManager
+@inject InventoryService InventoryService
+
+
+
+
+<div style="margin: auto;  width: 60%;   padding: 10px; height:auto">
+    
+
+
+    <MudCard Outlined="true" Height="auto" Width="500px" >
+    <MudCardContent>
+        <MudCardHeader>
+        <CardHeaderContent>
+                    <MudText Typo="Typo.h2">Add item</MudText>
+        </CardHeaderContent>
+        <CardHeaderActions>
+        </CardHeaderActions>
+        </MudCardHeader>
+    </MudCardContent>
+
+        <div class="form-floating align-center justify-space-between" style="padding:20px ">
+
+            <MudTextField @bind-Value="_item" Label="Item name" Variant="Variant.Outlined" Style="width:450px" Required="true" RequiredError="item name is required!"  />
+            <MudTextField @bind-Value="_quantity" Label="Item quantity" Variant="Variant.Outlined" Style="width:450px" Required="true" RequiredError="item quantity is required!"  /> 
+            <MudTextField @bind-Value="_price" Label="Item price" Variant="Variant.Outlined" Style="width:450px" Required="true" RequiredError="item price is required!" />
+            <MudTextField @bind-Value="GlobalState.CurrentUser.Username" Label="user name" Variant="Variant.Outlined" Style="width:450px" ReadOnly="true" RequiredError="username is required!" />
+
+        </div>
+       
+        <div class="d-flex align-center justify-space-around" style="padding:20px">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" OnClick="createItem">Add Item</MudButton>
+        </div>
+
+        @if(showmessage)
+        {
+            <MudAlert Style="width:auto" Severity="Severity.Info" Dense="true" Class="my-2">The item has been successfully added</MudAlert>
+        }
+
+
+
+    </MudCard>
+</div>
+@code {
+
+    public string _item { get; set; }
+    public int _quantity { get; set; }
+    public string _user { get; set; }
+    public string ApprovedBy { get; set; } = GlobalState.CurrentUser.Username;
+    public Guid ItemId { get; set; } = new Guid();
+    public DateTime worktime { get; set; } = DateTime.Now;
+    public double _price { get; set; }
+    public DateTime timedate { get; set; }
+    public bool showmessage = false;
+
+    public void createItem()
+    {
+       
+        var inventory = InventoryService.CreateItem(ItemId, _item, _quantity, ApprovedBy, _user, worktime, _price);
+        LogService.AddLog($"Item {_item} has been added to the inventory by {GlobalState.CurrentUser.Username} at {worktime}",worktime);
+        showmessage = true;
+    }
+}

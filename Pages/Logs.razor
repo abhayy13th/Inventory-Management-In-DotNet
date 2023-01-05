@@ -1,0 +1,77 @@
+﻿@page "/logs"
+@using CourseWork.Data
+@using CourseWork.Data.Model
+@using MudBlazor
+
+<MudContainer>
+<h3>Logs</h3>
+
+    <MudSelect Style="overflow-y:auto" @bind-Value="Month" Placeholder="Months" Margin="Margin.Dense" T="int" Label="Months" Variant="MudBlazor.Variant.Outlined" Class="d-flex align-left justify-center mud-width-full py-8">
+                    
+               
+                <MudSelectItem Value="1"> January </MudSelectItem>
+                <MudSelectItem Value="2"> February </MudSelectItem>
+                <MudSelectItem Value="3"> March </MudSelectItem>
+                <MudSelectItem Value="4"> April </MudSelectItem>
+                <MudSelectItem Value="5"> May </MudSelectItem>
+                <MudSelectItem Value="6"> June </MudSelectItem>
+                <MudSelectItem Value="7"> July </MudSelectItem>
+                <MudSelectItem Value="8"> August </MudSelectItem>
+                <MudSelectItem Value="9"> September </MudSelectItem>
+                <MudSelectItem Value="10"> October </MudSelectItem>
+                <MudSelectItem Value="11"> November </MudSelectItem>
+                <MudSelectItem Value="12"> December </MudSelectItem>
+                
+
+            </MudSelect>
+                
+    
+    <br />
+    
+
+	@if (logs == null)
+	{
+		<p><em>Loading...</em></p>
+	}
+ 
+	<MudSimpleTable Dense="@dense" Hover="@hover" Bordered="@bordered" Striped="@striped" Style="overflow-x: auto;">
+    <thead>
+    <th>Log Time</th>
+    <th>Description</th>
+    </thead>
+    <tbody>
+    @foreach (var log in logs)
+        {
+                    if (log.datetime.Month == Month)
+                    {
+                        <tr>
+                            <td>@log.datetime</td>
+                            <td>@log.LogEntry</td>
+                        </tr>
+                    }
+        }
+
+       </tbody>
+   </MudSimpleTable>
+    
+</MudContainer>
+
+@code {
+
+    private List<Log> logs;
+    private bool dense = false;
+    private bool hover = true;
+    private bool striped = true;
+    private bool bordered = false;
+    private int currentMonth = DateTime.Now.Month;
+    private int Month;
+    protected override async Task OnInitializedAsync()
+    {
+        logs = LogService.GetAllLogs();
+        Month = currentMonth;
+
+  
+    }
+    
+}
+

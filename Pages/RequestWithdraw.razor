@@ -1,0 +1,98 @@
+﻿@page "/withdraw"
+@using CourseWork.Data
+@using CourseWork.Data.Model
+
+
+<MudPaper Height="auto" Width="100%">
+    <MudContainer Fixed="true">
+        <MudText Typo="Typo.h2">Request Item</MudText>
+       <MudGrid>
+            <MudItem xs=6>
+                <MudSelect @bind-Value="items" Margin="Margin.Dense" T="string" Label="Item" Variant="Variant.Outlined" Class="d-flex align-left justify-center mud-width-full py-8" >
+                    
+                    @foreach (var item in Elements) {
+                        <MudSelectItem Value="@item.Item"/>
+                    }
+
+                </MudSelect>
+                <MudNumericField @bind-Value="quantityItem" Label="Quantity" Variant="Variant.Outlined" Min="0" Class="d-flex align-left justify-center mud-width-full py-8" />
+                <br />
+
+                <MudButton Variant="Variant.Filled" Disabled="@time" Color="Color.Primary" Class="ml-auto" OnClick="requestInventory">Request</MudButton>
+
+            </MudItem>
+
+
+            
+
+
+        </MudGrid>
+        @if (showMessage)
+        {
+            <MudAlert Severity="Severity.Info" Dense="true" Class="my-2">The request has been successfully sent</MudAlert>
+        }
+
+    </MudContainer>
+</MudPaper>
+<br />
+
+@code {
+    private IEnumerable<InventoryModel> Elements = new List<InventoryModel>();
+    private int quantityItem;
+    private bool time = false;
+    private string items;
+    private string takenby = GlobalState.CurrentUser.Username;
+    private DateTime dateTime;
+    private IEnumerable<RequestModel> Requests = new List<RequestModel>();
+    private bool showMessage = false;
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        Elements = InventoryService.GetAllItems();
+
+        DateTime currentTime = DateTime.Now;
+        if (currentTime.DayOfWeek >= DayOfWeek.Monday && currentTime.DayOfWeek <= DayOfWeek.Friday)
+
+        {  //Check if the current time is between 9:00 AM and 4:00 PM
+            if (currentTime.TimeOfDay >= new TimeSpan(9, 0, 0) && currentTime.TimeOfDay <= new TimeSpan(16, 0, 0)){
+                time = false;
+            }
+            else
+            {
+                time = true;
+            }
+
+        }
+        else
+        {
+            time = true;
+        }
+
+    }
+    private void requestInventory()
+    {
+        dateTime = DateTime.Now;
+
+        var inventory = InventoryService.CreateRequest(items, quantityItem, takenby, dateTime);
+
+        if (inventory != null)
+        {
+            showMessage = true;
+
+        }
+        LogService.AddLog($"{quantityItem} of {items} were requested by {takenby} on {dateTime}", dateTime);
+
+
+    }
+   
+
+    
+
+   
+    
+}
+
+
+

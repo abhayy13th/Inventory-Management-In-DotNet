@@ -1,0 +1,89 @@
+﻿@page "/home"
+@inject NavigationManager navigationManager 
+<h3>Welcome</h3>
+<div>
+<RadzenCard Style="height: auto;" class="scroller">
+    <RadzenText TextStyle="TextStyle.H4">Bar Graph</RadzenText>
+    <RadzenChart>
+        <RadzenColumnSeries Data="@dataItems" CategoryProperty="itemName" Title="Item" LineType="LineType.Dashed" ValueProperty="quantity">
+            <RadzenSeriesDataLabels Visible="true" />
+        </RadzenColumnSeries>
+        <RadzenColumnOptions Radius="5" />
+        <RadzenValueAxis Min="0">
+            <RadzenGridLines Visible="true" />
+            <RadzenAxisTitle Text="Quantity withdrawn" />
+        </RadzenValueAxis>
+        <RadzenCategoryAxis>
+            <RadzenAxisTitle Text="Item Name" />
+        </RadzenCategoryAxis>
+        <RadzenLegend Visible="false" />
+    </RadzenChart>
+</RadzenCard>
+</div>
+<div>
+<RadzenCard Style="height: auto;" class="scroller">
+    <RadzenText TextStyle="TextStyle.H4">Pie Chart</RadzenText>
+    <RadzenChart>
+        <RadzenPieSeries Data="@dataItems" Title="Withdraws" CategoryProperty="itemName" ValueProperty="quantity">
+            <RadzenSeriesDataLabels Visible="true" />
+        </RadzenPieSeries>
+        <RadzenLegend Visible="false" />
+    </RadzenChart>
+</RadzenCard>
+</div>
+
+@code {
+
+
+    public class DataItem
+    {
+        public string itemName { get; set; }
+        public int quantity { get; set; }
+    }
+
+    private List<DataItem> dataItems;
+    private List<RequestModel> requests = InventoryService.GetAllRequests();
+
+    protected override void OnInitialized()
+    {
+        dataItems = parseData(requests);
+    }
+
+    
+    private List<DataItem> parseData(List<RequestModel> logs)
+    {
+        // Dictonary
+        var itemQuantities = new Dictionary<string, int>();
+
+        foreach (var obj in logs)
+        {
+            
+            var itemName = obj.RequestItem;
+            
+            var quantity = obj.Quantity;
+
+            if (itemQuantities.ContainsKey(itemName))
+            {
+              
+                itemQuantities[itemName] += quantity;
+            }
+            else
+            {
+                itemQuantities[itemName] = quantity;
+            }
+        }
+
+        
+        var items = new List<DataItem>();
+        foreach (var k in itemQuantities)
+        {
+            
+            items.Add(new() { itemName = k.Key, quantity = k.Value });
+        }
+
+       
+        return items;
+    }
+
+   
+}

@@ -1,0 +1,124 @@
+﻿@page "/login"
+@using CourseWork.Data
+@using CourseWork.Data.Model
+@using MudBlazor
+@using System.ComponentModel.DataAnnotations
+
+@inject NavigationManager NavigationManager
+@inject UserService UserService
+
+
+
+
+<div style="top:500px;margin: auto;  width: 60%;   padding: 10px; overflow-y: scroll">
+<MudContainer>
+    <MudCard Outlined="true" Height="auto" Width="500px" >
+    <MudCardContent>
+        <MudCardHeader>
+        <CardHeaderContent>
+                <MudText Typo="Typo.h2">Welcome</MudText>
+        </CardHeaderContent>
+        <CardHeaderActions>
+        </CardHeaderActions>
+        </MudCardHeader>
+    </MudCardContent>
+
+        <div class="form-floating align-center justify-space-between" style="padding:20px ">
+
+            <MudTextField @bind-Value="_userName" Label="User Name" Variant="MudBlazor.Variant.Outlined" Style="width:450px" Required="true" RequiredError="User name is required!"  />
+                    
+      </div>
+        <div class="d-flex align-center justify-space-between" style="padding:20px ">
+            <MudTextField @bind-Value="_password" Style="width:450px" Label="Password" Variant="MudBlazor.Variant.Outlined" InputType="@PasswordInput" Adornment="Adornment.End" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="ButtonTestclick" AdornmentAriaLabel="Show Password" Required="true" RequiredError="Password is required" />
+                    </div>
+ <br /><br />
+                        <div class="d-flex align-center justify-space-around" style="padding:20px">
+                <MudButton Variant="MudBlazor.Variant.Filled" Color="Color.Primary" Class="ml-auto" OnClick="LoginUser">Login</MudButton>
+                        </div>
+             @if(_errorMessage != "" )  {        
+            <MudAlert Style="width:auto" Severity="Severity.Warning" Dense="true" Class="my-2">@_errorMessage</MudAlert>
+            }
+   
+</MudCard>
+</MudContainer>    
+</div>
+
+@code {
+    //[CascadingParameter]
+   //private GlobalState _globalState { get; set; } 
+    private string _userName;
+    private string _password;
+    private string _hashPassword;
+    
+    private string _errorMessage = "";
+
+    protected override void OnInitialized()
+    {
+        try
+        {
+       
+            var user = UserService.Login(UserService.SeedUsername, UserService.SeedPassword);
+
+        }
+        catch
+        {
+
+            _errorMessage = "Error";
+
+        }
+
+        GlobalState.CurrentUser = null;
+        _errorMessage = "";
+    }
+
+
+
+
+    public void LoginUser()
+    {   
+        try{
+            _errorMessage = "";
+
+            _hashPassword = Helper.ConvertHash(_password, "");
+            GlobalState.CurrentUser = UserService.Login(_userName, _password);
+            
+            if (GlobalState.CurrentUser == null)
+            {
+                _errorMessage = "Invalid username or password";
+            }
+           
+            else
+            {
+                NavigationManager.NavigateTo("/home");
+            }
+        }
+      catch (Exception e)
+        {
+            _errorMessage = e.Message;
+            Console.WriteLine(e);
+        }
+
+       
+
+    }
+ 
+    bool isShow;
+    InputType PasswordInput = InputType.Password;
+    string PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+
+    void ButtonTestclick()
+    {
+        @if (isShow)
+        {
+            isShow = false;
+            PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+            PasswordInput = InputType.Password;
+        }
+        else
+        {
+            isShow = true;
+            PasswordInputIcon = Icons.Material.Filled.Visibility;
+            PasswordInput = InputType.Text;
+        }
+    }
+}

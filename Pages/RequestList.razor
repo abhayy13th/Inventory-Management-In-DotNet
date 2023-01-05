@@ -1,0 +1,82 @@
+﻿@page "/requestList"
+
+
+<MudTable Items="@Requests" Dense="@dense" Hover="@hover" ReadOnly="@ronly" Filter="new Func<RequestModel,bool>(FilterFunc)" @bind-SelectedItem="selectedItem1" SortLabel="Sort By"  >
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Request List</MudText>
+        <MudSpacer />
+        <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    </ToolBarContent>
+    <ColGroup>
+    </ColGroup>
+    <HeaderContent>
+        <MudTh><MudTableSortLabel SortBy="new Func<RequestModel, object>(x=>x.RequestItem)">Item</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<RequestModel, object>(x=>x.Quantity)">Quantity</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<RequestModel, object>(x=>x.ApprovedBy)">Approved By</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<RequestModel, object>(x=>x.TakenBy)">Taken By</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<RequestModel, object>(x=>x.DateTakenOut)">Date Taken Out</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<RequestModel, object>(x=>x.status)">Status</MudTableSortLabel></MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Item">@context.RequestItem</MudTd>
+        <MudTd DataLabel="Quantity">@context.Quantity</MudTd>
+        <MudTd DataLabel="Approved by">@context.ApprovedBy</MudTd>
+        <MudTd DataLabel="Taken By">@context.TakenBy</MudTd>
+        <MudTd DataLabel="Date Taken Out">@context.DateTakenOut</MudTd>
+        <MudTd DataLabel="Status">@context.status</MudTd>
+    </RowTemplate>
+    <RowEditingTemplate>
+        <MudTd DataLabel="Item">
+            <MudTextField @bind-Value="@context.RequestItem" Required />
+        </MudTd>
+        <MudTd DataLabel="Quantity">
+            <MudNumericField @bind-Value="@context.Quantity" Required />
+        </MudTd>
+        <MudTd DataLabel="ApprovedBy">
+            <MudTextField @bind-Value="@context.ApprovedBy" />
+        </MudTd>
+        <MudTd DataLabel="Taken By">
+            <MudTextField @bind-Value="@context.TakenBy" Required />
+        </MudTd>
+        <MudTd DataLabel="Date Taken Out">
+            <MudTextField @bind-Value="@context.DateTakenOut" Required />
+        </MudTd>
+        <MudTd DataLabel="Price">
+            <MudNumericField @bind-Value="@context.status" Required />
+        </MudTd>
+    </RowEditingTemplate>
+    <PagerContent>
+        <MudTablePager />
+    </PagerContent>
+  
+</MudTable>
+
+@code {
+
+    private IEnumerable<RequestModel> Requests = new List<RequestModel>();
+    private bool dense = false;
+    private bool hover = true;
+    private bool ronly = false;
+    private string searchString = "";
+    private RequestModel selectedItem1 = null;
+   
+    protected override async Task OnInitializedAsync()
+    {
+        
+        
+         Requests = InventoryService.GetAllRequests();
+        
+    }
+    private bool FilterFunc(RequestModel element)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if (element.RequestItem.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.TakenBy.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if ($"{element.Quantity} {element.status} ".Contains(searchString))
+            return true;
+        return false;
+    }
+}

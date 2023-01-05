@@ -1,0 +1,22 @@
+﻿@page "/"
+@using CourseWork.Data.Model;
+@inject NavigationManager NavManager
+@code{
+    //[CascadingParameter]
+    //private GlobalState _globalState { get; set; }
+
+    protected override void  OnInitialized()
+    {
+        if (GlobalState.CurrentUser == null)
+        {
+            NavManager.NavigateTo("/login");
+        }
+        else
+        {
+            NavManager.NavigateTo("/dashboard");
+        }
+    }
+
+    
+    
+}

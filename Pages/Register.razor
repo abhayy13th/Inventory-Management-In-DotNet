@@ -1,0 +1,141 @@
+﻿@page "/register"
+@using CourseWork.Data
+@using CourseWork.Data.Model
+
+@inject NavigationManager NavigationManager
+
+
+
+<div style="top:500px;margin: auto;  width: 60%;   padding: 10px; ">
+    <MudContainer>
+        <MudCard Outlined="true" Height="auto" Width="500px">
+            <MudCardContent>
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h2">Add Staff</MudText>
+                    </CardHeaderContent>
+                    <CardHeaderActions>
+                    </CardHeaderActions>
+                </MudCardHeader>
+          
+
+            <div class="form-floating align-center justify-space-between" style="padding:20px ">
+
+                <MudTextField @bind-Value="_userName" Label="User Name" Variant="Variant.Outlined" Style="width:450px" Required="true" RequiredError="User name is required!" />
+
+            </div>
+            <div class="d-flex align-center justify-space-between" style="padding:20px ">
+                <MudTextField @bind-Value="_password" Style="width:450px" Label="Password" Variant="Variant.Outlined" InputType="@PasswordInput" Adornment="Adornment.End" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="ButtonTestclick" AdornmentAriaLabel="Show Password" Required="true" RequiredError="Password is required" />
+            </div>
+            <div class="d-flex align-center justify-space-between" style="padding:20px ">
+                <MudTextField @bind-Value="_confirmpassword" Style="width:450px" Label="ConfirmPassword" Variant="Variant.Outlined" InputType="@PasswordInput" Adornment="Adornment.End" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="ButtonTestclick" AdornmentAriaLabel="Show Password" Required="true" RequiredError="Password is required" />
+            </div>
+            @if (_confirmpassword != _password)
+            {
+                <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Dense="true" Class="my-2">The passwords do not match</MudAlert>
+                <br />
+
+                <br />
+                <div class="d-flex align-center justify-space-around" style="padding:20px">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" Disabled="true" OnClick="RegisterUser">Register</MudButton>
+                </div>
+            }else{
+            
+                <br />
+
+                <br />
+                <div class="d-flex align-center justify-space-around" style="padding:20px">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" OnClick="RegisterUser">Register</MudButton>
+                </div>
+            }
+                @if (showMessage)
+                {
+                    <MudAlert Severity="Severity.Info" Dense="true" Class="my-2">The staff has successfully added</MudAlert>
+                }
+            
+            </MudCardContent>
+        </MudCard>
+    </MudContainer>
+</div>
+
+@code {
+    private string _userName;
+    private string _password;
+    private string _confirmpassword;
+    private bool showMessage = false;
+    private RoleModel Role = RoleModel.Staff;
+
+    public void RegisterUser()
+    {
+        if (_confirmpassword == _password)
+        {
+            var user=UserService.Register(_userName, _password, Role);
+            if (user != null)
+            {
+                showMessage = true;
+               
+            }
+
+        }
+    }
+
+    bool isShow;
+    InputType PasswordInput = InputType.Password;
+    string PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+
+  
+
+    void ButtonTestclick()
+    {
+        @if (isShow)
+        {
+            isShow = false;
+            PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+            PasswordInput = InputType.Password;
+        }
+        else
+        {
+            isShow = true;
+            PasswordInputIcon = Icons.Material.Filled.Visibility;
+            PasswordInput = InputType.Text;
+        }
+    }
+
+}
+
+
+@*<
+<div class="user-login">
+    <form class="login" @onsubmit="RegisterUser">
+        <h3>Register</h3>
+        <p>Enter your details</p>
+        <br />
+        <input type="text" placeholder="User Name" @bind="_userName" />
+        <input type="password" placeholder="New Password" @bind="_password" />
+        <input type="password" placeholder="Confirm Password" @bind="_confirmPassword" />
+        <MudSelect T="Pizza" Label="Pizza" Variant="Variant.Filled" AnchorOrigin="Origin.BottomCenter">
+            <MudSelectItem Value="@(new Pizza("Cardinale"))" />
+            <MudSelectItem Value="@(new Pizza("Diavolo"))" />
+            <MudSelectItem Value="@(new Pizza("Margarita"))" />
+            <MudSelectItem Value="@(new Pizza("Spinaci"))" />
+        </MudSelect>
+        <input type="submit" value="Log In" />
+ 
+  
+    </form>
+</div>
+@code {
+    private string _userName;
+    private string _password;
+    private string _confirmPassword;
+    private string _hashPassword;
+    private RoleModel roleModel;
+    public void RegisterUser()
+    {
+        
+        _hashPassword = Helper.ConvertHash(_confirmPassword, "");
+        UserService.Register(_userName, _hashPassword,role);
+        NavigationManager.NavigateTo("/login");
+    }
+}
+*@
